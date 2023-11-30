@@ -35,4 +35,6 @@ contract SignatureProxy is ISignatureProxy {
 
     return _returnData;
   }
+
+  receive() external payable {}
 }

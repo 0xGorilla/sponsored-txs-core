@@ -29,6 +29,9 @@ contract IntegrationSignatureProxy is IntegrationBase {
     // create a new empty wallet
     (signer, signerPk) = makeAddrAndKey('alice');
 
+    // deal ETH to signer
+    vm.deal(signer, type(uint256).max - 1);
+
     // deploy a gasless proxy
     proxyFactory = new SignatureProxyFactory();
     signerProxy = proxyFactory.deploy(signer);
@@ -53,8 +56,9 @@ contract IntegrationSignatureProxy is IntegrationBase {
   }
 
   function test_gasless_tx_with_value(uint128 _amount) public {
-    // fund the signer proxy with eth
-    vm.deal(address(signerProxy), _amount);
+    // fund the proxy with eth
+    vm.prank(signer);
+    payable(address(signerProxy)).transfer(_amount);
 
     // sign a mint tx from our signer
     bytes memory _data = abi.encodeWithSelector(IWETH.deposit.selector);
