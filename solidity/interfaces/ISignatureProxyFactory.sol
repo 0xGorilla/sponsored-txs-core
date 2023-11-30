@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.20;
 
-import './ISignatureProxy.sol';
+import {ISignatureProxy} from './ISignatureProxy.sol';
 
 interface ISignatureProxyFactory {
   event DeploySignatureProxy(address _owner, ISignatureProxy _signatureProxy);

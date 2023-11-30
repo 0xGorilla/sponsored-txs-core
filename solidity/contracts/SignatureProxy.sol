@@ -8,11 +8,11 @@ import {ECDSA} from 'openzeppelin/utils/cryptography/ECDSA.sol';
 contract SignatureProxy is ISignatureProxy {
   using ECDSA for bytes32;
 
+  address public immutable OWNER;
   uint256 public nonce;
-  address public immutable owner;
 
   constructor(address _owner) {
-    owner = _owner;
+    OWNER = _owner;
   }
 
   function exec(
@@ -21,14 +21,15 @@ contract SignatureProxy is ISignatureProxy {
     uint8 _v,
     bytes32 _r,
     bytes32 _s
-  ) external payable returns (bytes memory) {
+  ) external payable returns (bytes memory _returnData) {
     bytes32 _hash = keccak256(abi.encode(_to, _data, msg.value, block.chainid, nonce++));
     address _signer = ecrecover(_hash, _v, _r, _s);
 
-    address _owner = owner;
+    address _owner = OWNER;
     if (_owner != _signer) revert SignatureProxy_NotOwner(_owner, _signer);
 
-    (bool _success, bytes memory _returnData) = address(_to).call{value: msg.value}(_data);
+    bool _success;
+    (_success, _returnData) = address(_to).call{value: msg.value}(_data);
     if (!_success) revert SignatureProxy_FailedCall(_returnData);
 
     return _returnData;
