@@ -52,8 +52,7 @@ contract IntegrationSignatureProxy is IntegrationBase {
     assertEq(testToken.balanceOf(address(signerProxy)), _amount);
   }
 
-  function test_gasless_tx_with_value() public {
-    uint128 _amount = 1 ether;
+  function test_gasless_tx_with_value(uint128 _amount) public {
     // fund the signer proxy with eth
     vm.deal(address(signerProxy), _amount);
 
