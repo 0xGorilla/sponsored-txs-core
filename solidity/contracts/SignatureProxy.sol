@@ -18,18 +18,19 @@ contract SignatureProxy is ISignatureProxy {
   function exec(
     address _to,
     bytes memory _data,
+    uint256 _value,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external payable returns (bytes memory _returnData) {
-    bytes32 _hash = keccak256(abi.encode(_to, _data, msg.value, block.chainid, nonce++));
+    bytes32 _hash = keccak256(abi.encode(_to, _data, _value, block.chainid, nonce++));
     address _signer = ecrecover(_hash, _v, _r, _s);
 
     address _owner = OWNER;
     if (_owner != _signer) revert SignatureProxy_NotOwner(_owner, _signer);
 
     bool _success;
-    (_success, _returnData) = address(_to).call{value: msg.value}(_data);
+    (_success, _returnData) = address(_to).call{value: _value}(_data);
     if (!_success) revert SignatureProxy_FailedCall(_returnData);
 
     return _returnData;

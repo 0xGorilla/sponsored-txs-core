@@ -14,12 +14,13 @@ contract SignatureProxyFactory is ISignatureProxyFactory {
     address _owner,
     address _to,
     bytes memory _data,
+    uint256 _value,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external payable returns (ISignatureProxy _signatureProxy, bytes memory _returnData) {
     _signatureProxy = _deploy(_owner);
-    _returnData = _signatureProxy.exec(_to, _data, _v, _r, _s);
+    _returnData = _signatureProxy.exec(_to, _data, _value, _v, _r, _s);
   }
 
   function getSignatureProxy(address _owner) external view returns (ISignatureProxy _signatureProxy) {

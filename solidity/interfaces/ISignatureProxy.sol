@@ -10,6 +10,7 @@ interface ISignatureProxy {
   function exec(
     address _to,
     bytes memory _data,
+    uint256 _value,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
