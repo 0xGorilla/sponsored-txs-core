@@ -6,6 +6,8 @@ import {SignatureProxyFactory} from 'contracts/SignatureProxyFactory.sol';
 import {ISignatureProxyFactory} from 'interfaces/ISignatureProxyFactory.sol';
 import {ISignatureProxy} from 'interfaces/ISignatureProxy.sol';
 import {IERC20} from 'isolmate/interfaces/tokens/IERC20.sol';
+import {ECDSA} from 'openzeppelin/utils/cryptography/ECDSA.sol';
+import {MessageHashUtils} from 'openzeppelin/utils/cryptography/MessageHashUtils.sol';
 
 interface ITestToken is IERC20 {
   function mint(uint256 _amount) external;
@@ -16,6 +18,9 @@ interface IWETH is IERC20 {
 }
 
 contract IntegrationSignatureProxy is IntegrationBase {
+  using ECDSA for bytes32;
+  using MessageHashUtils for bytes32;
+
   IERC20 public testToken = IERC20(0x16F63C5036d3F48A239358656a8f123eCE85789C);
   IWETH public weth = IWETH(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
   address public signer;
@@ -45,8 +50,8 @@ contract IntegrationSignatureProxy is IntegrationBase {
   function test_gasless_tx(uint128 _amount) public {
     // sign a mint tx from our signer
     bytes memory _data = abi.encodeCall(ITestToken.mint, _amount);
-    bytes32 _hash = keccak256(abi.encode(testToken, _data, 0, block.chainid, signerProxy.nonce()));
-    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(signerPk, _hash);
+    bytes32 _hash = keccak256(abi.encode(testToken, _data, 0, block.chainid, signerProxy.nextNonce()));
+    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(signerPk, _hash.toEthSignedMessageHash());
 
     // execute the tx as a sponsor
     signerProxy.exec(address(testToken), _data, 0, _v, _r, _s);
@@ -62,8 +67,8 @@ contract IntegrationSignatureProxy is IntegrationBase {
 
     // sign a mint tx from our signer
     bytes memory _data = abi.encodeWithSelector(IWETH.deposit.selector);
-    bytes32 _hash = keccak256(abi.encode(weth, _data, _amount, block.chainid, signerProxy.nonce()));
-    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(signerPk, _hash);
+    bytes32 _hash = keccak256(abi.encode(weth, _data, _amount, block.chainid, signerProxy.nextNonce()));
+    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(signerPk, _hash.toEthSignedMessageHash());
 
     // execute the tx as a sponsor
     signerProxy.exec(address(weth), _data, _amount, _v, _r, _s);
@@ -77,8 +82,8 @@ contract IntegrationSignatureProxy is IntegrationBase {
 
     // sign a mint transaction from an incorrect signer
     bytes memory _data = abi.encodeCall(ITestToken.mint, _amount);
-    bytes32 _hash = keccak256(abi.encode(testToken, _data, 0, block.chainid, signerProxy.nonce()));
-    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(_incorrectSignerPk, _hash);
+    bytes32 _hash = keccak256(abi.encode(testToken, _data, 0, block.chainid, signerProxy.nextNonce()));
+    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(_incorrectSignerPk, _hash.toEthSignedMessageHash());
 
     // expect the proxy to revert
     vm.expectRevert(abi.encodeWithSelector(ISignatureProxy.SignatureProxy_NotOwner.selector, signer, _incorrectSigner));

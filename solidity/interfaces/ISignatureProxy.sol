@@ -6,7 +6,7 @@ interface ISignatureProxy {
   error SignatureProxy_FailedCall(bytes _returnData);
 
   function OWNER() external returns (address _owner);
-  function nonce() external returns (uint256 _nonce);
+  function nextNonce() external returns (uint256 _nextNonce);
   function exec(
     address _to,
     bytes memory _data,

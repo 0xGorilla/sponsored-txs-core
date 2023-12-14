@@ -3,13 +3,15 @@ pragma solidity =0.8.20;
 
 import {ISignatureProxy} from 'interfaces/ISignatureProxy.sol';
 import {ECDSA} from 'openzeppelin/utils/cryptography/ECDSA.sol';
+import {MessageHashUtils} from 'openzeppelin/utils/cryptography/MessageHashUtils.sol';
 
 // TODO: allow for batch txs
 contract SignatureProxy is ISignatureProxy {
   using ECDSA for bytes32;
+  using MessageHashUtils for bytes32;
 
   address public immutable OWNER;
-  uint256 public nonce;
+  uint256 public nextNonce;
 
   constructor(address _owner) {
     OWNER = _owner;
@@ -23,8 +25,10 @@ contract SignatureProxy is ISignatureProxy {
     bytes32 _r,
     bytes32 _s
   ) external payable returns (bytes memory _returnData) {
-    bytes32 _hash = keccak256(abi.encode(_to, _data, _value, block.chainid, nonce++));
-    address _signer = ecrecover(_hash, _v, _r, _s);
+    bytes32 _hash = keccak256(abi.encode(_to, _data, _value, block.chainid, nextNonce));
+    bytes32 _signedHash = _hash.toEthSignedMessageHash();
+    bytes memory _signature = abi.encodePacked(_r, _s, _v);
+    address _signer = _signedHash.recover(_signature);
 
     address _owner = OWNER;
     if (_owner != _signer) revert SignatureProxy_NotOwner(_owner, _signer);
@@ -32,6 +36,10 @@ contract SignatureProxy is ISignatureProxy {
     bool _success;
     (_success, _returnData) = address(_to).call{value: _value}(_data);
     if (!_success) revert SignatureProxy_FailedCall(_returnData);
+
+    unchecked {
+      nextNonce++;
+    }
 
     return _returnData;
   }

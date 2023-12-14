@@ -7,7 +7,8 @@ import {SignatureProxyFactory} from 'contracts/SignatureProxyFactory.sol';
 contract Deploy is Script {
   function run() external {
     vm.startBroadcast();
-    new SignatureProxyFactory();
+    SignatureProxyFactory factory = new SignatureProxyFactory();
+    factory.deploy(msg.sender);
     vm.stopBroadcast();
   }
 }

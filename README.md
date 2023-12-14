@@ -8,4 +8,4 @@ PoC of the smart contracts needed for [Sponsored Txs](https://faucets.rip).
 
 | **Contract**          | **Address**                                |
 |-----------------------|--------------------------------------------|
-| SignatureProxyFactory | [0x152EfE2Df95d100Adf391E96e980608deeCc5f25](https://goerli.etherscan.io/address/0x152EfE2Df95d100Adf391E96e980608deeCc5f25) |
+| SignatureProxyFactory | [0xeeb1498dA3C99376d2E47cc2d8520884FcedB99D](https://goerli.etherscan.io/address/0x69E8ba86dEa2039c98982C89BF03038d9A5B7A77) |
